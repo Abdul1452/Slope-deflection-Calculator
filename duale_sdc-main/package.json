@@ -1,5 +1,5 @@
 {
-  "name": "version_14",
+  "name": "slope-deflection-calculator",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -34,8 +34,5 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.19",
     "typescript": "^5"
-  },
-  "builds": [
-    { "src": "duale_sdc-main/package.json", "use": "@vercel/next" }
-  ]
+  }
 }
