@@ -1,14 +1,15 @@
 "use client";
 
 import { FixedEndMomentResults, SlopeDeflectionEquation } from "@/typings";
-import { Solution } from "../utils/boundaryCondition";
+import { Rotations } from "../utils/beamSolver";
 import { SpanCriticalPoints } from "../utils/criticalBMSF";
 import BMSFCharts from "./bmsf-charts";
 import { motion } from "framer-motion";
 
 interface Props {
   equations: SlopeDeflectionEquation[];
-  boundaryCondition: Solution;
+  rotations: Rotations;
+  warnings?: string[];
   finalMoments?: { [key: string]: number };
   reactions?: { [key: string]: number };
   criticalPoints?: SpanCriticalPoints[];
@@ -22,12 +23,14 @@ const revealVariants = {
 
 export default function Results({
   equations,
-  boundaryCondition,
+  rotations,
+  warnings,
   finalMoments,
   reactions,
   criticalPoints,
   results,
 }: Props) {
+  const rotationEntries = Object.entries(rotations ?? {});
   return (
     <div className="space-y-6">
       <motion.div
@@ -117,7 +120,20 @@ export default function Results({
         </div>
       </motion.div>
 
-      {boundaryCondition && (
+      {warnings && warnings.length > 0 && (
+        <div
+          role="alert"
+          className="mt-4 p-4 rounded-lg border border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950"
+        >
+          {warnings.map((warning) => (
+            <p key={warning} className="text-amber-900 dark:text-amber-200">
+              {warning}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {rotationEntries.length > 0 && (
         <motion.div
           initial="hidden"
           animate="visible"
@@ -129,17 +145,11 @@ export default function Results({
             Boundary Conditions
           </h3>
           <div className="space-y-2 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-            <p className="text-gray-700 dark:text-gray-300">
-              θB = {boundaryCondition.thetaB.toFixed(6)}
-            </p>
-            <p className="text-gray-700 dark:text-gray-300">
-              θC = {boundaryCondition.thetaC.toFixed(6)}
-            </p>
-            {boundaryCondition.thetaD !== undefined && (
-              <p className="text-gray-700 dark:text-gray-300">
-                θD = {boundaryCondition.thetaD.toFixed(6)}
+            {rotationEntries.map(([node, value]) => (
+              <p key={node} className="text-gray-700 dark:text-gray-300">
+                θ{node} = {value.toFixed(6)}
               </p>
-            )}
+            ))}
           </div>
         </motion.div>
       )}

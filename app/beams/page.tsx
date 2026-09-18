@@ -15,16 +15,10 @@ import {
   Span,
 } from "@/typings";
 import { LOAD_TYPES } from "../utils/loadTypes";
-import {
-  Solution,
-  solveSimultaneousEquations,
-} from "../utils/boundaryCondition";
+import { Rotations, solveBeam } from "../utils/beamSolver";
 import { extractCriticalBMSF, SpanCriticalPoints } from "../utils/criticalBMSF";
 import { calculateBMSF } from "../utils/calculateBMSF";
 import { calculateReactions } from "../utils/calculateReactions";
-import { calculateFinalMoments } from "../utils/calculateFinalMoments";
-import { generateSlopeDeflectionEquations } from "../utils/slopeDeflection";
-import { calculateFixedEndMoments } from "../utils/calculations";
 import Results from "../components/results";
 import SpanInput from "../components/span-inputs";
 
@@ -50,11 +44,8 @@ export default function CalculatePage() {
   const [slopeDeflectionEquations, setSlopeDeflectionEquations] = useState<
     SlopeDeflectionEquation[]
   >([]);
-  const [boundaryCondition, setBoundaryCondition] = useState<Solution>({
-    thetaB: 0,
-    thetaC: 0,
-    thetaD: 0,
-  });
+  const [rotations, setRotations] = useState<Rotations>({});
+  const [solverWarnings, setSolverWarnings] = useState<string[]>([]);
   const [finalMoments, setFinalMoments] = useState<{ [key: string]: number }>(
     {}
   );
@@ -71,10 +62,13 @@ export default function CalculatePage() {
   }, [formData]);
 
   const validateForm = () => {
+    // Any number of spans is solvable now that each rotating joint contributes
+    // its own unknown, so this only checks that the inputs are physical.
     if (
       formData.modulusOfElasticity <= 0 ||
       formData.momentOfInertia <= 0 ||
-      formData.numberOfSpans < 3
+      formData.numberOfSpans < 1 ||
+      formData.spans.length === 0
     ) {
       return false;
     }
@@ -125,74 +119,33 @@ export default function CalculatePage() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // Calculate Fixed End Moments
-    const fixedEndMoments = formData.spans.map((span, index) => {
-      const { start, end } = calculateFixedEndMoments(span);
-      const spanLabel =
-        String.fromCharCode(65 + index) + String.fromCharCode(66 + index);
-      return {
-        spanLabel,
-        startMoment: start,
-        endMoment: end,
-      };
-    });
+    // One pass builds the fixed-end moments, the slope-deflection equations
+    // and the joint rotations, so every result below comes from the same
+    // system of equations.
+    const solution = solveBeam(formData);
+    const { moments } = solution;
 
-    // Generate Slope Deflection Equations
-    const equations = generateSlopeDeflectionEquations(
+    const reactions = calculateReactions(formData.spans, moments);
+
+    const {
+      results: bmsfResults,
+      startReactions,
+      startMoments,
+    } = calculateBMSF(formData.spans, moments);
+    const criticalPoints = extractCriticalBMSF(
       formData.spans,
-      fixedEndMoments,
-      formData.sinkingSupports
+      bmsfResults,
+      startReactions,
+      startMoments
     );
 
-    const equation1 = equations[0].endEquation + equations[1].startEquation;
-    const equation2 = equations[1].endEquation + equations[2].startEquation;
-    const lastSpan = formData.spans[formData.spans.length - 1];
-    const equation3 =
-      lastSpan.endSupport === "hinged" || lastSpan.endSupport === "roller"
-        ? equations[2].endEquation
-        : null;
-
-    const solutions = solveSimultaneousEquations(
-      equation1,
-      equation2,
-      equation3,
-      formData.modulusOfElasticity,
-      formData.momentOfInertia
-    );
-
-    const EI = formData.modulusOfElasticity * formData.momentOfInertia;
-    if (solutions) {
-      const moments = calculateFinalMoments(
-        equations,
-        solutions.thetaB,
-        solutions.thetaC,
-        solutions.thetaD ?? 0,
-        EI
-      );
-
-      // Calculate reactions using the moments directly instead of from state
-      const reactions = calculateReactions(formData.spans, moments);
-
-      const {
-        results: bmsfResults,
-        startReactions,
-        startMoments,
-      } = calculateBMSF(formData.spans, moments);
-      const criticalPoints = extractCriticalBMSF(
-        formData.spans,
-        bmsfResults,
-        startReactions,
-        startMoments
-      );
-
-      // Update state with the final results
-      setResults(fixedEndMoments);
-      setSlopeDeflectionEquations(equations);
-      setBoundaryCondition(solutions);
-      setFinalMoments(moments);
-      setReactions(reactions);
-      setCriticalPoints(criticalPoints);
-    }
+    setResults(solution.fixedEndMoments);
+    setSlopeDeflectionEquations(solution.equations);
+    setRotations(solution.rotations);
+    setSolverWarnings(solution.warnings);
+    setFinalMoments(moments);
+    setReactions(reactions);
+    setCriticalPoints(criticalPoints);
   };
 
   return (
@@ -318,7 +271,8 @@ export default function CalculatePage() {
             <div className="mt-8 space-y-6">
               <Results
                 equations={slopeDeflectionEquations}
-                boundaryCondition={boundaryCondition}
+                rotations={rotations}
+                warnings={solverWarnings}
                 finalMoments={finalMoments}
                 reactions={reactions}
                 criticalPoints={criticalPoints}

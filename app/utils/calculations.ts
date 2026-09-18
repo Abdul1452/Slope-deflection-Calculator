@@ -34,9 +34,10 @@ export const calculateFixedEndMoments = (span: Span): FixedEndMoments => {
     }
 
     case LOAD_TYPES.VDL_LEFT: {
-      // For VDL increasing to left, FEMab = -wL²/30, FEMba = wL²/20
-      const startMoment = (P * Math.pow(L, 2)) / 30;
-      const endMoment = (P * Math.pow(L, 2)) / 20;
+      // Peak at the left end: FEMab = -wL²/20, FEMba = wL²/30 — the mirror of
+      // VDL_RIGHT, which this case previously duplicated outright.
+      const startMoment = (P * Math.pow(L, 2)) / 20;
+      const endMoment = (P * Math.pow(L, 2)) / 30;
       return {
         start: -startMoment,
         end: endMoment,
