@@ -22,10 +22,9 @@ A web app for structural engineers to analyse **beams and frames** with the **sl
 
 ## Getting started
 
-The application lives in the `duale_sdc-main/` folder.
+The application lives at the repository root.
 
 ```bash
-cd duale_sdc-main
 npm ci
 npm run dev
 ```
@@ -35,7 +34,6 @@ Open http://localhost:3000 in your browser.
 Build for production:
 
 ```bash
-cd duale_sdc-main
 npm ci
 npm run lint
 npx tsc --noEmit
@@ -50,7 +48,6 @@ The slope-deflection method writes each member's end moments in terms of the unk
 ## Project structure
 
 ```
-duale_sdc-main/
 ├── app/
 │   ├── page.tsx        # Landing page (Beams / Frames)
 │   ├── beams/          # Beam analysis UI
@@ -63,8 +60,8 @@ duale_sdc-main/
 
 ## Deployment
 
-Configured for Vercel from repository root (no manual root-directory change required).  
-`vercel.json` runs install/build/dev commands inside `duale_sdc-main`.
+Configured for Vercel from the repository root (no manual root-directory change required).  
+The Next.js app is at the root, so Vercel's Next.js preset builds it with no command overrides.
 
 Expected Vercel setup:
 - Framework preset: **Next.js**

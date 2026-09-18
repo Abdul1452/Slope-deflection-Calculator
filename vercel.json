@@ -1,7 +1,4 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "nextjs",
-  "installCommand": "cd duale_sdc-main && npm ci",
-  "buildCommand": "cd duale_sdc-main && npm run build",
-  "devCommand": "cd duale_sdc-main && npm run dev"
+  "framework": "nextjs"
 }

@@ -38,3 +38,6 @@ duale_sdc-main.zip
 # Misc
 .pnp.*
 *.tgz
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
