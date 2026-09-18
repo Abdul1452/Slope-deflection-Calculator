@@ -7,6 +7,29 @@ interface FrameBMSFChartsProps {
 export default function FrameShearForceDiagram({
   results,
 }: FrameBMSFChartsProps) {
+  const hasDiagramData =
+    results.columnBMSF.length >= 2 &&
+    results.columnBMSF[0]?.sections?.length > 0 &&
+    results.columnBMSF[1]?.sections?.length > 0 &&
+    results.beamBMSF.length > 0 &&
+    results.beamBMSF[0]?.x?.length > 0;
+
+  if (!hasDiagramData) {
+    return (
+      <div className="space-y-8 mt-8">
+        <div className="border-t border-white/20 pt-8">
+          <h3 className="text-2xl font-bold text-white mb-6">
+            Shear Force Diagram
+          </h3>
+          <p className="text-white/70">
+            No frame diagram to render yet. Provide at least 2 columns and 1
+            beam, then submit.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const svgHeight = 600;
   const svgWidth = 800;
   const margin = { top: 40, right: 60, bottom: 40, left: 60 };
@@ -40,10 +63,10 @@ export default function FrameShearForceDiagram({
   );
 
   // Scale factors
-  const heightScale = frameHeight / maxColumnHeight;
-  const columnShearScale = columnWidth / (2 * maxColumnShear);
-  const beamLengthScale = (rightColumnX - leftColumnX) / maxBeamLength;
-  const beamShearScale = beamHeight / (2 * maxBeamShear);
+  const heightScale = frameHeight / Math.max(maxColumnHeight, 1);
+  const columnShearScale = columnWidth / (2 * Math.max(maxColumnShear, 1));
+  const beamLengthScale = (rightColumnX - leftColumnX) / Math.max(maxBeamLength, 1);
+  const beamShearScale = beamHeight / (2 * Math.max(maxBeamShear, 1));
 
   // Generate paths
   const generateColumnPath = (columnIndex: number) => {

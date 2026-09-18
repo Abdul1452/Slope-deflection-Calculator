@@ -26,7 +26,7 @@ The application lives in the `duale_sdc-main/` folder.
 
 ```bash
 cd duale_sdc-main
-npm install
+npm ci
 npm run dev
 ```
 
@@ -35,6 +35,10 @@ Open http://localhost:3000 in your browser.
 Build for production:
 
 ```bash
+cd duale_sdc-main
+npm ci
+npm run lint
+npx tsc --noEmit
 npm run build
 npm start
 ```
@@ -59,7 +63,13 @@ duale_sdc-main/
 
 ## Deployment
 
-Configured for Vercel — `vercel.json` sets `duale_sdc-main` as the build target.
+Configured for Vercel from repository root (no manual root-directory change required).  
+`vercel.json` runs install/build/dev commands inside `duale_sdc-main`.
+
+Expected Vercel setup:
+- Framework preset: **Next.js**
+- Root directory: repository root
+- Build/install commands: use values from `vercel.json` (do not override)
 
 ---
 

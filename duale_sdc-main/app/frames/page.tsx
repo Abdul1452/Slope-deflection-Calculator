@@ -52,6 +52,16 @@ export default function FramesPage() {
   });
 
   const [results, setResults] = useState<CalculationResults | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const hasMinimumMembers =
+    formData.numberOfColumns >= 2 && formData.numberOfBeams >= 1;
+  const hasValidMemberInputs =
+    formData.columns.every(
+      (column) => column.length > 0 && column.momentOfInertia > 0
+    ) &&
+    formData.beams.every((beam) => beam.length > 0 && beam.momentOfInertia > 0);
+  const isFormValid = hasMinimumMembers && hasValidMemberInputs;
 
   const handleNumberOfColumnsChange = (value: number) => {
     const newColumns = Array(value)
@@ -99,104 +109,122 @@ export default function FramesPage() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setError(null);
 
-    const columnResults = formData.columns.map((column, index) => ({
-      label: `Column ${index + 1}`,
-      ...calculateFrameFixedEndMoments(column),
-    }));
+    if (!isFormValid) {
+      setResults(null);
+      setError(
+        "Set at least 2 columns and 1 beam, then provide positive lengths and inertias."
+      );
+      return;
+    }
 
-    const beamResults = formData.beams.map((beam, index) => ({
-      label: `Beam ${index + 1}`,
-      ...calculateFrameFixedEndMoments(beam),
-    }));
+    try {
+      const columnResults = formData.columns.map((column, index) => ({
+        label: `Column ${index + 1}`,
+        ...calculateFrameFixedEndMoments(column),
+      }));
 
-    // Generate slope deflection equations
-    const slopeDeflectionEquations = generateFrameSlopeDeflectionEquations(
-      formData.columns,
-      formData.beams,
-      [...columnResults, ...beamResults]
-    );
+      const beamResults = formData.beams.map((beam, index) => ({
+        label: `Beam ${index + 1}`,
+        ...calculateFrameFixedEndMoments(beam),
+      }));
 
-    const hasHingeOrRoller = formData.columns.some(
-      (column) =>
-        column.supportType === "hinged" || column.supportType === "roller"
-    );
+      // Generate slope deflection equations
+      const slopeDeflectionEquations = generateFrameSlopeDeflectionEquations(
+        formData.columns,
+        formData.beams,
+        [...columnResults, ...beamResults]
+      );
 
-    // Get boundary equations
-    const boundaryEquations = generalFrameEquation(
-      slopeDeflectionEquations,
-      hasHingeOrRoller
-    );
+      const hasHingeOrRoller = formData.columns.some(
+        (column) =>
+          column.supportType === "hinged" || column.supportType === "roller"
+      );
 
-    // Calculate shear equation and simplify it
-    const shearEquation = generateFrameShearEquation(
-      formData.columns,
-      slopeDeflectionEquations
-    );
+      // Get boundary equations
+      const boundaryEquations = generalFrameEquation(
+        slopeDeflectionEquations,
+        hasHingeOrRoller
+      );
 
-    const simplifiedShearEquation = simplifyFrameShearEquation(
-      shearEquation.shearEquation
-    );
+      // Calculate shear equation and simplify it
+      const shearEquation = generateFrameShearEquation(
+        formData.columns,
+        slopeDeflectionEquations
+      );
 
-    // Solve the system of equations
-    const solution = solveFrameEquations(
-      boundaryEquations?.eq1 || "",
-      boundaryEquations?.eq2 || "",
-      boundaryEquations?.eq3 || null,
-      simplifiedShearEquation.simplifiedEquation
-    );
+      const simplifiedShearEquation = simplifyFrameShearEquation(
+        shearEquation.shearEquation
+      );
 
-    const finalMoments = calculateFrameFinalMoments(
-      slopeDeflectionEquations,
-      formData.columns,
-      solution.thetaB,
-      solution.thetaC,
-      solution.thetaD,
-      solution.delta,
-      1
-    );
+      // Solve the system of equations
+      const solution = solveFrameEquations(
+        boundaryEquations?.eq1 || "",
+        boundaryEquations?.eq2 || "",
+        boundaryEquations?.eq3 || null,
+        simplifiedShearEquation.simplifiedEquation
+      );
 
-    // Calculate horizontal reactions
-    const horizontalReactions = calculateFrameHorizontalReactions(
-      formData.columns,
-      finalMoments
-    );
+      const finalMoments = calculateFrameFinalMoments(
+        slopeDeflectionEquations,
+        formData.columns,
+        solution.thetaB,
+        solution.thetaC,
+        solution.thetaD,
+        solution.delta,
+        1
+      );
 
-    // Add vertical reactions calculation
-    const verticalReactions = calculateFrameVerticalReactions(
-      formData.beams,
-      finalMoments
-    );
+      // Calculate horizontal reactions
+      const horizontalReactions = calculateFrameHorizontalReactions(
+        formData.columns,
+        finalMoments
+      );
 
-    // Calculate BMSF for columns and beams
-    const columnBMSF = formData.columns.map((column, index) =>
-      calculateColumnBMSF(column, index, finalMoments, horizontalReactions)
-    );
+      // Add vertical reactions calculation
+      const verticalReactions = calculateFrameVerticalReactions(
+        formData.beams,
+        finalMoments
+      );
 
-    const beamBMSF = formData.beams.map((beam) =>
-      calculateBeamBMSF(
-        beam,
-        finalMoments[`MBCs`] || 0, // Start moment for beam
-        verticalReactions
-      )
-    );
+      // Calculate BMSF for columns and beams
+      const columnBMSF = formData.columns.map((column, index) =>
+        calculateColumnBMSF(column, index, finalMoments, horizontalReactions)
+      );
 
-    setResults({
-      columns: columnResults,
-      beams: beamResults,
-      slopeDeflectionEquations,
-      boundaryEquations,
-      shearEquation: {
-        ...shearEquation,
-        simplifiedEquation: simplifiedShearEquation,
-      },
-      solution,
-      finalMoments,
-      horizontalReactions,
-      verticalReactions,
-      columnBMSF,
-      beamBMSF,
-    });
+      const beamBMSF = formData.beams.map((beam) =>
+        calculateBeamBMSF(
+          beam,
+          finalMoments[`MBCs`] || 0, // Start moment for beam
+          verticalReactions
+        )
+      );
+
+      setResults({
+        columns: columnResults,
+        beams: beamResults,
+        slopeDeflectionEquations,
+        boundaryEquations,
+        shearEquation: {
+          ...shearEquation,
+          simplifiedEquation: simplifiedShearEquation,
+        },
+        solution,
+        finalMoments,
+        horizontalReactions,
+        verticalReactions,
+        columnBMSF,
+        beamBMSF,
+      });
+    } catch (submitError) {
+      setResults(null);
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "Unable to solve the frame with the current inputs."
+      );
+    }
   };
 
   return (
@@ -267,13 +295,20 @@ export default function FramesPage() {
           )}
 
           <Button
-            disabled={
-              formData.numberOfColumns === 0 && formData.numberOfBeams === 0
-            }
+            disabled={!isFormValid}
             className="w-full hover:bg-indigo-300 duration-300"
           >
             SUBMIT
           </Button>
+          {!isFormValid && (
+            <p className="text-sm text-amber-700 dark:text-amber-300">
+              Demo-ready preset expects at least 2 columns and 1 beam with
+              positive length and inertia values.
+            </p>
+          )}
+          {error && (
+            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+          )}
         </form>
 
         {results && (
