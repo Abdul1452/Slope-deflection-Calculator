@@ -95,7 +95,9 @@
 
 @layer base {
   * {
-    @apply transition-colors var(--transition);
+    @apply transition-colors;
+    transition-duration: 200ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   html {
@@ -139,19 +141,19 @@
     @apply bg-input border border-border rounded-[calc(var(--radius))] px-4 py-2.5;
     @apply placeholder-muted-foreground/60;
     @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
-    @apply focus:border-transparent transition-all var(--transition);
+    @apply focus:border-transparent transition-all;
     @apply dark:focus:ring-offset-background;
   }
 
   button {
-    @apply transition-all var(--transition);
+    @apply transition-all;
   }
 
   /* Enhanced card styling */
   .card {
     @apply rounded-[calc(var(--radius)_+_0.25rem)] border border-border;
     @apply bg-card text-card-foreground shadow-sm;
-    @apply hover:shadow-md transition-shadow var(--transition);
+    @apply hover:shadow-md transition-shadow;
   }
 
   /* Link styling */
@@ -319,14 +321,6 @@
   }
 
   /* Text utilities */
-  .text-truncate-2 {
-    @apply line-clamp-2;
-  }
-
-  .text-truncate-3 {
-    @apply line-clamp-3;
-  }
-
   /* Opacity utilities for glass morphism */
   .bg-opacity-glass {
     @apply bg-opacity-80 dark:bg-opacity-10;
