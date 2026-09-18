@@ -35,6 +35,7 @@ export default function ColumnForm({
               </Label>
               <Input
                 type="number"
+                step="any"
                 value={column.length}
                 onChange={(e) =>
                   onColumnChange(
@@ -53,6 +54,7 @@ export default function ColumnForm({
               </Label>
               <Input
                 type="number"
+                step="any"
                 value={column.momentOfInertia}
                 onChange={(e) =>
                   onColumnChange(
@@ -113,6 +115,7 @@ export default function ColumnForm({
                 </Label>
                 <Input
                   type="number"
+                  step="any"
                   value={column.loadMagnitude}
                   onChange={(e) =>
                     onColumnChange(

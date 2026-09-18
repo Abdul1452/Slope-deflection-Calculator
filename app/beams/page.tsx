@@ -245,6 +245,7 @@ export default function CalculatePage() {
                   <Label htmlFor="load">Modulus of Elasticity</Label>
                   <Input
                     type="number"
+                    step="any"
                     value={formData.modulusOfElasticity}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -260,6 +261,7 @@ export default function CalculatePage() {
                   <Label htmlFor="elasticity">Moment of Inertia (I)</Label>
                   <Input
                     type="number"
+                    step="any"
                     value={formData.momentOfInertia}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -279,6 +281,7 @@ export default function CalculatePage() {
                       </label>
                       <Input
                         type="number"
+                        step="any"
                         value={value}
                         onChange={(e) =>
                           handleSinkingSupportChange(

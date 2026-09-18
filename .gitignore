@@ -41,3 +41,6 @@ duale_sdc-main.zip
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel
+.env*

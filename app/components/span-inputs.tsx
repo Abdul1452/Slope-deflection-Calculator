@@ -49,6 +49,7 @@ export default function SpanInput({ span, index, onChange }: SpanInputProps) {
           </label>
           <Input
             type="number"
+            step="any"
             value={span.length}
             onChange={(e) =>
               updateSpan("length", parseFloat(e.target.value) || 0)
@@ -61,6 +62,7 @@ export default function SpanInput({ span, index, onChange }: SpanInputProps) {
           <label className="block text-sm font-medium mb-1">I</label>
           <Input
             type="number"
+            step="any"
             value={span.momentOfInertia}
             onChange={(e) =>
               updateSpan("momentOfInertia", parseFloat(e.target.value) || 0)
@@ -156,6 +158,7 @@ export default function SpanInput({ span, index, onChange }: SpanInputProps) {
           </label>
           <Input
             type="number"
+            step="any"
             value={span.loadMagnitude}
             onChange={(e) =>
               updateSpan("loadMagnitude", parseFloat(e.target.value) || 0)
@@ -172,6 +175,7 @@ export default function SpanInput({ span, index, onChange }: SpanInputProps) {
               </label>
               <Input
                 type="number"
+                step="any"
                 value={span.pointLoadDistances?.a || 0}
                 onChange={(e) =>
                   updatePointLoadDistances("a", parseFloat(e.target.value) || 0)
@@ -185,6 +189,7 @@ export default function SpanInput({ span, index, onChange }: SpanInputProps) {
               </label>
               <Input
                 type="number"
+                step="any"
                 value={span.pointLoadDistances?.b || 0}
                 onChange={(e) =>
                   updatePointLoadDistances("b", parseFloat(e.target.value) || 0)

@@ -32,6 +32,7 @@ export default function BeamForm({ beams, onBeamChange }: BeamFormProps) {
               </Label>
               <Input
                 type="number"
+                step="any"
                 value={beam.length}
                 onChange={(e) =>
                   onBeamChange(index, "length", parseFloat(e.target.value) || 0)
@@ -46,6 +47,7 @@ export default function BeamForm({ beams, onBeamChange }: BeamFormProps) {
               </Label>
               <Input
                 type="number"
+                step="any"
                 value={beam.momentOfInertia}
                 onChange={(e) =>
                   onBeamChange(
@@ -87,6 +89,7 @@ export default function BeamForm({ beams, onBeamChange }: BeamFormProps) {
                 </Label>
                 <Input
                   type="number"
+                  step="any"
                   value={beam.loadMagnitude}
                   onChange={(e) =>
                     onBeamChange(
@@ -108,6 +111,7 @@ export default function BeamForm({ beams, onBeamChange }: BeamFormProps) {
                   </Label>
                   <Input
                     type="number"
+                    step="any"
                     value={beam.pointLoadDistances?.a || 0}
                     onChange={(e) =>
                       onBeamChange(index, "pointLoadDistances", {
@@ -125,6 +129,7 @@ export default function BeamForm({ beams, onBeamChange }: BeamFormProps) {
                   </Label>
                   <Input
                     type="number"
+                    step="any"
                     value={beam.pointLoadDistances?.b || 0}
                     onChange={(e) =>
                       onBeamChange(index, "pointLoadDistances", {
